@@ -1,0 +1,8 @@
+# large model checkpoints (excluded; re-trainable via train.py)
+out/**/*.pth
+# external cache (symlinked to ../test_for_audio_better/cache)
+cache/
+# python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
