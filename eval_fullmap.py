@@ -19,7 +19,7 @@ from sh import SHGrid  # noqa: E402
 
 def build_extra(cfg, device):
     extra = {}
-    if cfg.correction == "cross":
+    if cfg.correction in ("cross", "cross_sup"):
         ccfg = copy.copy(cfg); ccfg.img_h, ccfg.img_w = cfg.coarse_h, cfg.coarse_w
         extra["coarse_feat"] = RayBank(ccfg, device=device).feat
     elif cfg.correction == "sh":
@@ -32,7 +32,10 @@ def load(run_dir, device):
     ck = torch.load(os.path.join(run_dir, "best.pth"), map_location="cpu", weights_only=False)
     cfg = SimpleNamespace(**ck["cfg"])
     m = FullMapNet(cfg).to(device).eval(); m.load_state_dict(ck["state_dict"])
-    return m, cfg, build_extra(cfg, device)
+    extra = build_extra(cfg, device)
+    if ck.get("norm") is not None:
+        extra["norm"] = (ck["norm"][0].to(device), ck["norm"][1].to(device))
+    return m, cfg, extra
 
 
 @torch.no_grad()
@@ -47,6 +50,8 @@ def evrun(model, loader, cfg, extra, device, mode="stereo", shuffle=False, swap=
             spec = shuffle_audio_batch(spec)
         if swap:
             spec = spec.flip(1)
+        if "norm" in extra:
+            spec = (spec - extra["norm"][0]) / extra["norm"][1]
         D = model(spec, extra.get("coarse_feat"), extra.get("sh_basis"))["D"] * cfg.max_depth
         mb.add(D, b["depth"].to(device) * cfg.max_depth, b["mask"].to(device))
         seen += spec.size(0)

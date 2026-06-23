@@ -33,13 +33,19 @@ class FullMapNet(nn.Module):
             nn.Upsample(scale_factor=2, mode="nearest"), conv_bn(cfg.width, cfg.width), Refine(cfg.width))
         self.head = nn.Sequential(conv_bn(cfg.width, cfg.width), nn.Conv2d(cfg.width, 1, 3, 1, 1))
 
-        if self.corr == "cross":
+        if self.corr in ("cross", "cross_sup"):
             self.hc, self.wc = cfg.coarse_h, cfg.coarse_w
             self.ray_mlp = nn.Sequential(nn.Linear(cfg.coarse_feat_dim, cfg.dim), nn.GELU(),
                                          nn.Linear(cfg.dim, cfg.dim), nn.GELU())
             self.cross = nn.ModuleList([CrossBlock(cfg.dim, cfg.n_heads) for _ in range(cfg.n_cross)])
             self.res_head = nn.Linear(cfg.dim, 1)
-            self.alpha = nn.Parameter(torch.zeros(1))
+            # zero-init residual head -> branch starts as a no-op (tip #2)
+            nn.init.zeros_(self.res_head.weight); nn.init.zeros_(self.res_head.bias)
+            self.res_scale = getattr(cfg, "res_scale", 0.3)
+            # learned 2D positional embedding for audio tokens (freq x time) (tip #10)
+            ntok = (self.H // 8) * (self.W // 8)
+            self.tok_pe = nn.Parameter(torch.zeros(1, ntok, cfg.dim))
+            self.alpha = nn.Parameter(torch.zeros(1))   # only used by plain 'cross'
         elif self.corr == "sh":
             self.sh_head = nn.Linear(256, (cfg.corr_sh_order + 1) ** 2)
             self.alpha = nn.Parameter(torch.zeros(1))
@@ -56,21 +62,27 @@ class FullMapNet(nn.Module):
         return torch.sigmoid(self.head(x))               # (B,1,H,W)
 
     def forward(self, spec, coarse_feat=None, sh_basis=None):
-        want_tok = self.corr == "cross"
+        want_tok = self.corr in ("cross", "cross_sup")
         z256, tok = self.bb(spec, want_tokens=want_tok)
         z = self.to_z(z256)
         film = self.film(z256) if self.corr == "film" else None
         D0 = self.decode(z, film)
         out = {"D0": D0, "extras": {}}
 
-        if self.corr == "cross":
+        if self.corr in ("cross", "cross_sup"):
             B = spec.size(0)
             q = self.ray_mlp(coarse_feat[None].expand(B, -1, -1))   # (B,Mc,dim)
+            ktok = tok + self.tok_pe                                # audio token 2D PE
             for blk in self.cross:
-                q = blk(q, tok)
-            dc = self.res_head(q).squeeze(-1).view(B, 1, self.hc, self.wc)
-            dc = F.interpolate(dc, (self.H, self.W), mode="bilinear", align_corners=False)
-            D = (D0 + 0.1 * torch.tanh(self.alpha) * dc).clamp(1e-3, 1.0)
+                q = blk(q, ktok)
+            raw = self.res_head(q).squeeze(-1).view(B, 1, self.hc, self.wc)
+            if self.corr == "cross_sup":
+                dc = self.res_scale * torch.tanh(raw)              # bounded residual (tip #1)
+                dc = F.interpolate(dc, (self.H, self.W), mode="bilinear", align_corners=False)
+                D = (D0 + dc).clamp(1e-3, 1.0)
+            else:                                                  # legacy gated 'cross'
+                dc = F.interpolate(raw, (self.H, self.W), mode="bilinear", align_corners=False)
+                D = (D0 + 0.1 * torch.tanh(self.alpha) * dc).clamp(1e-3, 1.0)
             out.update(D=D, extras={"alpha": float(self.alpha.detach()), "Dcorr": dc})
             return out
         if self.corr == "sh":

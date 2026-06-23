@@ -56,10 +56,17 @@ DEFAULTS = dict(
     w_res=0.02,               # residual L1 magnitude penalty
 
     # --- A9-A12 full-map decoder + audio correction (train_fullmap.py) ---
-    correction="none",        # none(A9) | cross(A10) | sh(A11) | film(A12)
+    correction="none",        # none(A9) | cross(A10) | sh(A11) | film(A12) | cross_sup(A14)
     coarse_h=16, coarse_w=32,  # coarse grid for the cross-residual branch
     corr_sh_order=3,          # SH order for the sh-correction / aux
     w_sh_aux=1.0,             # weight on audio->SH-coef auxiliary loss (A11)
+    # --- A14 supervised residual corrector ---
+    init_decoder="",          # warm-start decoder weights from this run (e.g. A9_fullmap_s0)
+    freeze_decoder=False,     # freeze D0 -> pure "is the A0 residual audio-predictable?" test
+    res_scale=0.3,            # bound on tanh residual (normalised depth)
+    w_res_sup=1.0,            # supervise Dcorr to lowpass(GT - D0)
+    w_tv=0.01,                # total-variation reg on Dcorr
+    chan_norm=False,          # per-channel train-set input normalisation (for 5ch A13/A14)
 
     # --- ray sampling ---
     n_rays=2048,              # rays supervised per sample per step
