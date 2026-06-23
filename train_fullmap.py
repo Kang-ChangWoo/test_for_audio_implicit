@@ -110,7 +110,11 @@ def main():
     norm = chan_stats(cfg, device) if cfg.chan_norm else None
     print(f"[cfg] correction={cfg.correction} {vars(cfg)}", flush=True)
 
-    model = FullMapNet(cfg).to(device)
+    if getattr(cfg, "arch", "fullmap") == "unet":
+        from model_unet import UNet
+        model = UNet(cfg).to(device)
+    else:
+        model = FullMapNet(cfg).to(device)
     if cfg.init_decoder:
         warm_start(model, cfg.init_decoder, cfg.freeze_decoder, device)
     print(f"[model] params={sum(p.numel() for p in model.parameters())/1e6:.2f}M", flush=True)

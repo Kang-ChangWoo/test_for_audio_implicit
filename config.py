@@ -55,6 +55,9 @@ DEFAULTS = dict(
     w_coarse=0.5,             # aux loss on SH-coarse depth
     w_res=0.02,               # residual L1 magnitude penalty
 
+    # --- architecture (train_fullmap.py): fullmap(A9 no-skip) | unet(pix2pix skip) ---
+    arch="fullmap",
+    ngf=64, unet_downs=6,     # pix2pix U-Net width / #downsamples (64x128 -> 1x2 at 6)
     # --- A9-A12 full-map decoder + audio correction (train_fullmap.py) ---
     correction="none",        # none(A9) | cross(A10) | sh(A11) | film(A12) | cross_sup(A14)
     coarse_h=16, coarse_w=32,  # coarse grid for the cross-residual branch

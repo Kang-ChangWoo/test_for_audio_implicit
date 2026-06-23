@@ -31,7 +31,12 @@ def build_extra(cfg, device):
 def load(run_dir, device):
     ck = torch.load(os.path.join(run_dir, "best.pth"), map_location="cpu", weights_only=False)
     cfg = SimpleNamespace(**ck["cfg"])
-    m = FullMapNet(cfg).to(device).eval(); m.load_state_dict(ck["state_dict"])
+    if getattr(cfg, "arch", "fullmap") == "unet":
+        from model_unet import UNet
+        m = UNet(cfg).to(device).eval()
+    else:
+        m = FullMapNet(cfg).to(device).eval()
+    m.load_state_dict(ck["state_dict"])
     extra = build_extra(cfg, device)
     if ck.get("norm") is not None:
         extra["norm"] = (ck["norm"][0].to(device), ck["norm"][1].to(device))
