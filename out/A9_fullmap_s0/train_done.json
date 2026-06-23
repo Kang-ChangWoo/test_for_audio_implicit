@@ -1,0 +1,202 @@
+{
+  "best_val_mae_m": 1.0285466653989934,
+  "hist": [
+    {
+      "epoch": 0,
+      "val_mae_m": 1.1372503176005408,
+      "alpha": null,
+      "mae": 0.09035102173686027
+    },
+    {
+      "epoch": 1,
+      "val_mae_m": 1.1468065535260223,
+      "alpha": null,
+      "mae": 0.07859067663550377
+    },
+    {
+      "epoch": 2,
+      "val_mae_m": 1.1232665657466256,
+      "alpha": null,
+      "mae": 0.07752245576845275
+    },
+    {
+      "epoch": 3,
+      "val_mae_m": 1.1024451351238258,
+      "alpha": null,
+      "mae": 0.0766194527513451
+    },
+    {
+      "epoch": 4,
+      "val_mae_m": 1.0877882567654829,
+      "alpha": null,
+      "mae": 0.07594411328434944
+    },
+    {
+      "epoch": 5,
+      "val_mae_m": 1.103864867369936,
+      "alpha": null,
+      "mae": 0.07524179907308684
+    },
+    {
+      "epoch": 6,
+      "val_mae_m": 1.074700424491836,
+      "alpha": null,
+      "mae": 0.07475392540295919
+    },
+    {
+      "epoch": 7,
+      "val_mae_m": 1.0719913131573822,
+      "alpha": null,
+      "mae": 0.07425103807614909
+    },
+    {
+      "epoch": 8,
+      "val_mae_m": 1.117811871483279,
+      "alpha": null,
+      "mae": 0.07376194770137469
+    },
+    {
+      "epoch": 9,
+      "val_mae_m": 1.0622866019841457,
+      "alpha": null,
+      "mae": 0.07322752310170068
+    },
+    {
+      "epoch": 10,
+      "val_mae_m": 1.0899016559151606,
+      "alpha": null,
+      "mae": 0.07222758380903138
+    },
+    {
+      "epoch": 11,
+      "val_mae_m": 1.0386935636898893,
+      "alpha": null,
+      "mae": 0.0706599884894159
+    },
+    {
+      "epoch": 12,
+      "val_mae_m": 1.0442040252587295,
+      "alpha": null,
+      "mae": 0.06954838063153956
+    },
+    {
+      "epoch": 13,
+      "val_mae_m": 1.0382314006482742,
+      "alpha": null,
+      "mae": 0.06863568586607774
+    },
+    {
+      "epoch": 14,
+      "val_mae_m": 1.0285466653989934,
+      "alpha": null,
+      "mae": 0.06748818257616626
+    },
+    {
+      "epoch": 15,
+      "val_mae_m": 1.0439849906129808,
+      "alpha": null,
+      "mae": 0.06612962956229845
+    },
+    {
+      "epoch": 16,
+      "val_mae_m": 1.04739875378174,
+      "alpha": null,
+      "mae": 0.0647615045060714
+    },
+    {
+      "epoch": 17,
+      "val_mae_m": 1.0431043301370555,
+      "alpha": null,
+      "mae": 0.06321749617656072
+    },
+    {
+      "epoch": 18,
+      "val_mae_m": 1.053125650973899,
+      "alpha": null,
+      "mae": 0.06162024572491646
+    },
+    {
+      "epoch": 19,
+      "val_mae_m": 1.0633939215817754,
+      "alpha": null,
+      "mae": 0.060200969982478356
+    },
+    {
+      "epoch": 20,
+      "val_mae_m": 1.060062847936006,
+      "alpha": null,
+      "mae": 0.058889978486630655
+    },
+    {
+      "epoch": 21,
+      "val_mae_m": 1.0601668331990288,
+      "alpha": null,
+      "mae": 0.05797989656527837
+    },
+    {
+      "epoch": 22,
+      "val_mae_m": 1.0679355691131396,
+      "alpha": null,
+      "mae": 0.057217000482810865
+    },
+    {
+      "epoch": 23,
+      "val_mae_m": 1.0679488220970446,
+      "alpha": null,
+      "mae": 0.05680060163140297
+    },
+    {
+      "epoch": 24,
+      "val_mae_m": 1.0674460026287813,
+      "alpha": null,
+      "mae": 0.0565521369377772
+    }
+  ],
+  "cfg": {
+    "dataset_dir": "/root/storage/matterport3d_0303renew",
+    "cache_dir": "../test_for_audio_better/cache",
+    "img_h": 64,
+    "img_w": 128,
+    "max_depth": 10.0,
+    "sample_rate": 48000,
+    "model": "raymlp",
+    "width": 48,
+    "embed_dim": 128,
+    "dim": 192,
+    "audio_dim": 256,
+    "use_xyz": true,
+    "use_fourier_pe": true,
+    "fourier_bands": 6,
+    "use_sh_pe": false,
+    "sh_order": 4,
+    "use_mic_pe": false,
+    "head_r": 0.0875,
+    "n_heads": 4,
+    "n_cross": 2,
+    "n_self": 2,
+    "use_depth_bins": false,
+    "n_bins": 64,
+    "hybrid_sh_order": 3,
+    "w_coarse": 0.5,
+    "w_res": 0.02,
+    "correction": "none",
+    "coarse_h": 16,
+    "coarse_w": 32,
+    "corr_sh_order": 3,
+    "w_sh_aux": 1.0,
+    "n_rays": 2048,
+    "eval_chunk": 4096,
+    "epochs": 25,
+    "batch_size": 64,
+    "lr": 0.002,
+    "weight_decay": 0.0001,
+    "num_workers": 8,
+    "seed": 0,
+    "device": "cuda",
+    "out_dir": "out",
+    "run_name": "A9_fullmap_s0",
+    "audio_mode": "stereo",
+    "shuffle_audio": false,
+    "mask_farfield": false
+  }
+}

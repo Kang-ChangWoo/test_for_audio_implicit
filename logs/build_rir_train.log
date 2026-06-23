@@ -1,0 +1,16 @@
+  train 0/28800
+  train 2000/28800
+  train 4000/28800
+  train 6000/28800
+  train 8000/28800
+  train 10000/28800
+  train 12000/28800
+  train 14000/28800
+  train 16000/28800
+  train 18000/28800
+  train 20000/28800
+  train 22000/28800
+  train 24000/28800
+  train 26000/28800
+  train 28000/28800
+[done] train: 28800 -> cache_rir

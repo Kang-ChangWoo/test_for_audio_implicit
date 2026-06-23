@@ -6,3 +6,5 @@ cache/
 __pycache__/
 *.pyc
 .ipynb_checkpoints/
+# A13 RIR feature cache (multi-GB)
+cache_rir/

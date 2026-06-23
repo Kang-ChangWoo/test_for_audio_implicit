@@ -38,10 +38,10 @@ class Refine(nn.Module):
 class AudioEncoder(nn.Module):
     """spec (B,2,H,W) -> global latent (B,audio_dim) and tokens (B,T,dim)."""
 
-    def __init__(self, width=48, audio_dim=256, dim=192):
+    def __init__(self, width=48, audio_dim=256, dim=192, in_ch=2):
         super().__init__()
         self.net = nn.Sequential(
-            conv_bn(2, width), conv_bn(width, width, s=2), Refine(width),
+            conv_bn(in_ch, width), conv_bn(width, width, s=2), Refine(width),
             conv_bn(width, width*2), conv_bn(width*2, width*2, s=2), Refine(width*2),
             conv_bn(width*2, width*4), conv_bn(width*4, width*4, s=2), Refine(width*4))
         c = width * 4

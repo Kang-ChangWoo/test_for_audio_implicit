@@ -72,6 +72,7 @@ class MetricBank:
         B = pred.shape[0]
         w = self.wlat * mask                                  # cos-lat * valid
         self._push("MAE", _wmae(pred, gt, w), B)
+        self._push("MAE_plain", _wmae(pred, gt, mask), B)     # mask-only (matches A0 0.802)
         self._push("RMSE", math.sqrt((((pred - gt) ** 2) * w).sum().item()
                                      / w.sum().clamp(min=1e-6).item()), B)
         ar = (pred - gt).abs() / gt.clamp(min=0.1)

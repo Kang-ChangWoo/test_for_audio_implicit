@@ -27,6 +27,8 @@ DEFAULTS = dict(
     cache_dir="../test_for_audio_better/cache",
     img_h=64, img_w=128, max_depth=10.0, sample_rate=48000,
 
+    # --- input channels (2 = log-mag binaural; 5 = RIR spatial feature, A13) ---
+    in_ch=2,
     # --- model selection ---
     # rayonly | raymlp | cross | crossself | hybrid
     model="raymlp",
@@ -52,6 +54,12 @@ DEFAULTS = dict(
     hybrid_sh_order=3,        # coarse spherical geometry order
     w_coarse=0.5,             # aux loss on SH-coarse depth
     w_res=0.02,               # residual L1 magnitude penalty
+
+    # --- A9-A12 full-map decoder + audio correction (train_fullmap.py) ---
+    correction="none",        # none(A9) | cross(A10) | sh(A11) | film(A12)
+    coarse_h=16, coarse_w=32,  # coarse grid for the cross-residual branch
+    corr_sh_order=3,          # SH order for the sh-correction / aux
+    w_sh_aux=1.0,             # weight on audio->SH-coef auxiliary loss (A11)
 
     # --- ray sampling ---
     n_rays=2048,              # rays supervised per sample per step
