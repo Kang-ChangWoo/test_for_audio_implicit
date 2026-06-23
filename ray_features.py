@@ -66,6 +66,28 @@ class RayBank:
         self.parts = parts
         self.feat_dim = feat.shape[1]
 
+        # tip3: locate the Fourier block + per-column band index (for progressive PE)
+        self.fourier_slice = None; self.fourier_band = None
+        off = 0
+        for nm, d in parts:
+            if nm == "fourier":
+                nb = cfg.fourier_bands
+                # layout: [sin(x_b0..x_b{nb-1}, y..., z...), cos(...)] -> band = col%nb within each axis
+                band = np.tile(np.repeat(np.arange(nb)[None], 1, 0), 0)  # placeholder
+                band = np.concatenate([np.tile(np.arange(nb), 3), np.tile(np.arange(nb), 3)])
+                self.fourier_slice = (off, off + d)
+                self.fourier_band = torch.from_numpy(band).to(device)
+            off += d
+
+        # tip4: per-sector ray-index pools (front/back/left/right/upper/lower)
+        d2 = np.deg2rad
+        self.sector_pools = []
+        for cond in [np.abs(az_f) < d2(45), (az_f >= d2(45)) & (az_f < d2(135)),
+                     np.abs(az_f) >= d2(135), (az_f <= -d2(45)) & (az_f > -d2(135)),
+                     el_f > d2(30), el_f < -d2(30)]:
+            idx = np.where(cond)[0]
+            self.sector_pools.append(torch.from_numpy(idx.astype(np.int64)).to(device))
+
     def mirror_index(self):
         """Column permutation that mirrors the ERP left<->right (azimuth -> -az),
         i.e. y -> -y. Used by the L/R-swap test. Returns LongTensor (W,) col map

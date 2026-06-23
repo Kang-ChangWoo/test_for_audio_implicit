@@ -46,6 +46,12 @@ DEFAULTS = dict(
     # --- attention sizes (cross / self models) ---
     n_heads=4, n_cross=2, n_self=2,
 
+    # --- implicit-field tuning tips (applied to cross/raymlp) ---
+    ray_mlp_skip=False,       # tip6: coord re-injection skip-MLP for ray embedding
+    ray_film=False,           # tip5: FiLM (global audio -> gamma,beta) on ray tokens after cross
+    prog_pe=False,            # tip3: progressive coarse->fine Fourier PE band opening
+    sector_sample=False,      # tip4: sector/near/grad-balanced ray sampling (vs uniform)
+
     # --- depth head ---
     use_depth_bins=False,     # log-depth bin classification + expected value
     n_bins=64,

@@ -112,6 +112,7 @@ def main():
     wlat = bank.area.view(1, 1, bank.H, bank.W)        # area weight as (1,1,H,W)
 
     best = 1e9; hist = []
+    total_steps = cfg.epochs * len(tr); gstep = 0
     for ep in range(cfg.epochs):
         model.train(); t0 = time.time(); run = {}
         for b in tr:
@@ -119,8 +120,22 @@ def main():
             depth = b["depth"].to(device).view(spec.size(0), -1)   # (B,N)
             mask = b["mask"].to(device).view(spec.size(0), -1)
             B = spec.size(0)
-            idx = torch.randint(0, bank.N, (B, cfg.n_rays), device=device)
+            if getattr(cfg, "sector_sample", False):                # tip4: half uniform + half sector-balanced
+                nh = cfg.n_rays // 2
+                u = torch.randint(0, bank.N, (B, cfg.n_rays - nh), device=device)
+                per = max(1, nh // len(bank.sector_pools)); secs = []
+                for pool in bank.sector_pools:
+                    secs.append(pool[torch.randint(0, len(pool), (B, per), device=device)])
+                idx = torch.cat([u] + secs, dim=1)
+            else:
+                idx = torch.randint(0, bank.N, (B, cfg.n_rays), device=device)
             rf = bank.feat[idx]                                     # (B,M,F)
+            if getattr(cfg, "prog_pe", False) and bank.fourier_slice is not None:  # tip3
+                prog = gstep / total_steps
+                bw = ((prog - bank.fourier_band.float() / cfg.fourier_bands) / 0.2).clamp(0, 1)
+                s, e = bank.fourier_slice
+                rf = rf.clone(); rf[..., s:e] = rf[..., s:e] * bw
+            gstep += 1
             gt = depth.gather(1, idx)                               # (B,M)
             w = bank.area[idx] * mask.gather(1, idx)                # (B,M)
             if cfg.mask_farfield:                                   # drop 10m-clamp rays

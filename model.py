@@ -126,6 +126,22 @@ class DepthHead(nn.Module):
 # --------------------------------------------------------------------------- #
 # main model
 # --------------------------------------------------------------------------- #
+class RaySkipMLP(nn.Module):
+    """tip6: re-inject ray coordinates mid-network so PE/SH features don't vanish."""
+    def __init__(self, in_dim, dim):
+        super().__init__()
+        self.in_proj = nn.Linear(in_dim, dim)
+        self.b1 = nn.Sequential(nn.Linear(dim, dim), nn.GELU(), nn.Linear(dim, dim))
+        self.skip = nn.Linear(in_dim + dim, dim)
+        self.b2 = nn.Sequential(nn.Linear(dim, dim), nn.GELU(), nn.Linear(dim, dim))
+
+    def forward(self, rf):
+        h = F.gelu(self.in_proj(rf))
+        h = F.gelu(h + self.b1(h))
+        h = F.gelu(self.skip(torch.cat([h, rf], -1)))
+        return F.gelu(h + self.b2(h))
+
+
 class RayDepthModel(nn.Module):
     def __init__(self, cfg, ray_feat_dim, bin_centers=None):
         super().__init__()
@@ -134,14 +150,20 @@ class RayDepthModel(nn.Module):
         self.use_audio = cfg.model != "rayonly"
         self.is_attn = cfg.model in ("cross", "crossself", "hybrid")
         self.use_self = cfg.model == "crossself"
+        self.ray_film = getattr(cfg, "ray_film", False)
 
         if self.use_audio:
             self.audio = AudioEncoder(cfg.width, cfg.audio_dim, cfg.dim)
 
-        # ray embedding
-        self.ray_mlp = nn.Sequential(
-            nn.Linear(ray_feat_dim, cfg.dim), nn.GELU(),
-            nn.Linear(cfg.dim, cfg.dim), nn.GELU())
+        # ray embedding (tip6: optional skip-MLP)
+        if getattr(cfg, "ray_mlp_skip", False):
+            self.ray_mlp = RaySkipMLP(ray_feat_dim, cfg.dim)
+        else:
+            self.ray_mlp = nn.Sequential(
+                nn.Linear(ray_feat_dim, cfg.dim), nn.GELU(),
+                nn.Linear(cfg.dim, cfg.dim), nn.GELU())
+        if self.ray_film and self.is_attn:
+            self.film = nn.Linear(cfg.audio_dim, 2 * cfg.dim)   # tip5
 
         if self.kind == "raymlp":
             fuse_in = cfg.dim + (cfg.audio_dim if self.use_audio else 0)
@@ -181,6 +203,9 @@ class RayDepthModel(nn.Module):
         h = q
         for blk in self.cross:
             h = blk(h, tok)
+        if self.ray_film:                                    # tip5: global-audio FiLM on ray tokens
+            g, b = self.film(z).chunk(2, dim=-1)
+            h = h * (1 + 0.1 * g[:, None, :]) + 0.1 * b[:, None, :]
         if self.use_self:
             for blk in self.selfb:
                 h = blk(h)

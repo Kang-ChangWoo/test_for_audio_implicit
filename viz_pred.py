@@ -15,10 +15,10 @@ DEV = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 FIG = "out/figs"
 
 # (label, run, type) type: 'impl'=RayDepthModel(eval.py), 'fm'=FullMapNet(eval_fullmap)
-COLS = [("A9 A0-decoder", "A9_fullmap_s0", "fm"),
+COLS = [("U-Net (skip)", "Aunet_s0", "fm"),
         ("A6 self-attn", "A6_crossself_s0", "impl"),
         ("A4 cross", "A4_cross_s0", "impl"),
-        ("A14 sup-resid", "A14_logmag_s0", "fm"),
+        ("A9 A0-decoder", "A9_fullmap_s0", "fm"),
         ("A2 RayMLP", "A2_raymlp_s0", "impl")]
 
 
