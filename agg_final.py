@@ -10,6 +10,7 @@ MODELS = [
     ("A9 A0 decoder",           ["A9_fullmap_s0", "A9_fullmap_s1", "A9_fullmap_s2"], "#888"),
     ("A4 cross-attn",           ["A4_cross_s0", "A4_cross_s1", "A4_cross_s2"], "#2a7"),
     ("A6 self-attn",            ["A6_crossself_s0", "A6_crossself_s1", "A6_crossself_s2"], "#2a7"),
+    ("A6 + #4 sector",          ["A6sec_s0", "A6sec_s1", "A6sec_s2"], "#1a6"),
     ("A11 SH-aux",              ["A11_shaux_s0", "A11_shaux_s1", "A11_shaux_s2"], "#e9a"),
     ("A13 +IPD (5ch)",          ["A13_ipd5_s0", "A13_ipd5_s1", "A13_ipd5_s2"], "#c63"),
     ("A14 sup-residual",        ["A14_logmag_s0", "A14_logmag_s1"], "#fa3"),
