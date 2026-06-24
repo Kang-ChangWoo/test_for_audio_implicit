@@ -9,7 +9,7 @@ import numpy as np
 import torch
 from types import SimpleNamespace
 
-from data import make_loader, apply_audio_mode, shuffle_audio_batch
+from data import make_loader, apply_audio_mode, shuffle_audio_batch, swap_audio_lr
 from ray_features import RayBank
 from model_fullmap import FullMapNet
 from metrics import MetricBank
@@ -54,7 +54,7 @@ def evrun(model, loader, cfg, extra, device, mode="stereo", shuffle=False, swap=
         if shuffle:
             spec = shuffle_audio_batch(spec)
         if swap:
-            spec = spec.flip(1)
+            spec = swap_audio_lr(spec)
         if "norm" in extra:
             spec = (spec - extra["norm"][0]) / extra["norm"][1]
         D = model(spec, extra.get("coarse_feat"), extra.get("sh_basis"))["D"] * cfg.max_depth

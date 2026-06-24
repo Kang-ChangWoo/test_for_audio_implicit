@@ -153,7 +153,8 @@ class RayDepthModel(nn.Module):
         self.ray_film = getattr(cfg, "ray_film", False)
 
         if self.use_audio:
-            self.audio = AudioEncoder(cfg.width, cfg.audio_dim, cfg.dim)
+            self.audio = AudioEncoder(cfg.width, cfg.audio_dim, cfg.dim,
+                                      in_ch=getattr(cfg, "in_ch", 2))
 
         # ray embedding (tip6: optional skip-MLP)
         if getattr(cfg, "ray_mlp_skip", False):

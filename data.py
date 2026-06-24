@@ -54,22 +54,43 @@ def make_loader(cfg, split, shuffle):
 
 
 def apply_audio_mode(spec, mode):
-    """Negative-control / ablation input transforms on (B,2,H,W) log-mag spec.
-    Channels are [L, R]. 'none' zeros audio (for the ray-only sanity path)."""
+    """Negative-control / ablation input transforms. Channel-count aware:
+    2ch = [L,R] log-mag; 3ch = [Lmag,Rmag,ILD]; 5ch = [Lmag,Rmag,ILD,cosIPD,sinIPD]."""
+    C = spec.shape[1]
     if mode == "stereo":
         return spec
-    if mode == "mono":
-        m = spec.mean(1, keepdim=True)
-        return m.expand(-1, 2, -1, -1).clone()
-    if mode == "left":
-        l = spec[:, 0:1]
-        return l.expand(-1, 2, -1, -1).clone()
-    if mode == "right":
-        r = spec[:, 1:2]
-        return r.expand(-1, 2, -1, -1).clone()
     if mode == "none":
         return torch.zeros_like(spec)
-    raise ValueError(mode)
+    if C == 2:
+        if mode == "mono":
+            m = spec.mean(1, keepdim=True); return m.expand(-1, 2, -1, -1).clone()
+        if mode == "left":
+            return spec[:, 0:1].expand(-1, 2, -1, -1).clone()
+        if mode == "right":
+            return spec[:, 1:2].expand(-1, 2, -1, -1).clone()
+    if C in (3, 5) and mode == "mono":
+        y = spec.clone()
+        mag = 0.5 * (spec[:, 0:1] + spec[:, 1:2])
+        y[:, 0:1] = mag; y[:, 1:2] = mag; y[:, 2:3] = 0.0    # ILD removed
+        if C >= 5:
+            y[:, 3:4] = 1.0; y[:, 4:5] = 0.0                 # cos(IPD)=1, sin(IPD)=0
+        return y
+    raise ValueError(f"unsupported audio_mode={mode} for C={C}")
+
+
+def swap_audio_lr(spec):
+    """L<->R swap, channel-count aware (the L/R-mirror control).
+    Negate the L-R-antisymmetric channels (ILD, sin(IPD)); cos(IPD) is symmetric."""
+    C = spec.shape[1]
+    if C == 2:
+        return spec[:, [1, 0]]
+    y = spec.clone()
+    y[:, 0] = spec[:, 1]; y[:, 1] = spec[:, 0]
+    if C >= 3:
+        y[:, 2] = -spec[:, 2]                                # ILD -> -ILD
+    if C >= 5:
+        y[:, 3] = spec[:, 3]; y[:, 4] = -spec[:, 4]          # cosIPD same, sinIPD -> -sinIPD
+    return y
 
 
 def shuffle_audio_batch(spec, generator=None):

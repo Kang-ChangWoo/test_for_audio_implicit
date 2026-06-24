@@ -16,7 +16,7 @@ import torch.nn.functional as F
 sys.path.append(os.path.join(os.path.dirname(__file__), "..", "test_for_audio_clip"))
 from sh import SHGrid  # noqa: E402
 
-_SECTOR_ORDER = ["front", "right", "back", "left", "upper", "lower"]
+_SECTOR_ORDER = ["front", "left", "back", "right", "upper", "lower"]
 
 
 # vendored from baseline_diag/diag_lib.py (avoid its heavy transitive imports)
@@ -37,8 +37,9 @@ def erp_region_masks(h, w):
     az = (jj + 0.5) / w * 2 * np.pi - np.pi
     el = np.pi / 2 - (ii + 0.5) / h * np.pi
     d = np.deg2rad
-    return {"front": np.abs(az) < d(45), "right": (az >= d(45)) & (az < d(135)),
-            "back": np.abs(az) >= d(135), "left": (az <= -d(45)) & (az > -d(135)),
+    # frame: x=front, y=left(+)/right(-)  => az>0 is LEFT (fixes prior swapped labels)
+    return {"front": np.abs(az) < d(45), "left": (az >= d(45)) & (az < d(135)),
+            "back": np.abs(az) >= d(135), "right": (az <= -d(45)) & (az > -d(135)),
             "upper": el > d(30), "lower": el < -d(30)}
 
 
@@ -89,6 +90,14 @@ class MetricBank:
         # far-field-excluded MAE: drop the 10m-clamp ceiling pixels (gt>=9.99m)
         wff = w * (gt < 9.99 * (self.md / 10.0)).float()
         self._push("MAE_ffx", _wmae(pred, gt, wff), B)
+
+        # L/R-handedness diagnostic: is the mirrored prediction closer to GT?
+        pmir = torch.flip(pred, dims=[-1])                    # az -> -az (cell-centred flip)
+        wm = mask  # per-sample masked MAE (B,)
+        e = ((pred - gt).abs() * wm).flatten(1).sum(1) / wm.flatten(1).sum(1).clamp(min=1e-6)
+        em = ((pmir - gt).abs() * wm).flatten(1).sum(1) / wm.flatten(1).sum(1).clamp(min=1e-6)
+        self._push("mirror_better_rate", float((em < e).float().mean()), B)
+        self._push("mae_gain_if_mirrored", float((e - torch.minimum(e, em)).mean()), B)
 
         # low-pass (coarse layout) MAE
         pl, gl = gaussian_blur_erp(pred, 3.0), gaussian_blur_erp(gt, 3.0)

@@ -93,7 +93,7 @@ class RayBank:
         i.e. y -> -y. Used by the L/R-swap test. Returns LongTensor (W,) col map
         broadcastable per row -> we return full (N,) index."""
         H, W = self.H, self.W
-        cols = (W - np.arange(W)) % W                     # az -> -az on the grid
+        cols = W - 1 - np.arange(W)                        # az -> -az: cell-centred flip (no shift)
         idx = (np.arange(H)[:, None] * W + cols[None, :]).ravel()
         return torch.from_numpy(idx.astype(np.int64))
 

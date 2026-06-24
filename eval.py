@@ -16,7 +16,7 @@ import numpy as np
 import torch
 from types import SimpleNamespace
 
-from data import make_loader, apply_audio_mode, shuffle_audio_batch
+from data import make_loader, apply_audio_mode, shuffle_audio_batch, swap_audio_lr
 from ray_features import RayBank, log_depth_bins
 from model import RayDepthModel
 from metrics import MetricBank, cos_lat
@@ -35,8 +35,9 @@ def load_model(run_dir, device):
 
 
 def mirror_w(x):
-    """Mirror an ERP map (B,1,H,W) left<->right: az -> -az."""
-    return torch.roll(torch.flip(x, dims=[-1]), shifts=1, dims=-1)
+    """Mirror an ERP map (B,1,H,W) left<->right. ERP az is cell-centred, so
+    az -> -az is exactly column j -> W-1-j == flip (NO roll; roll was a 1-cell bug)."""
+    return torch.flip(x, dims=[-1])
 
 
 @torch.no_grad()
@@ -52,7 +53,7 @@ def eval_condition(model, loader, bank, cfg, sh_full, device, mode="stereo",
         if shuffle:
             spec = shuffle_audio_batch(spec)
         if swap:
-            spec = spec.flip(1)                         # [L,R] -> [R,L]
+            spec = swap_audio_lr(spec)                  # L<->R, channel-aware
         pred = predict_full(model, spec, bank, cfg, sh_full) * cfg.max_depth
         gt = depth * cfg.max_depth
         mb.add(pred, gt, mask)
