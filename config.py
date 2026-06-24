@@ -76,6 +76,16 @@ DEFAULTS = dict(
     w_res_sup=1.0,            # supervise Dcorr to lowpass(GT - D0)
     w_tv=0.01,                # total-variation reg on Dcorr
     chan_norm=False,          # per-channel train-set input normalisation (for 5ch A13/A14)
+    w_swap_eq=0.0,            # tip8: weak swap-equivariance reg: f(swap_LR(x)) ~ mirror(f(x))
+
+    # --- probabilistic coarse head (train_prob.py): model the coarse-layout AMBIGUITY ---
+    # Finding (oracle decomp): error = coarse-layout multi-modality + unobservable fine detail.
+    # K diverse coarse hypotheses (relaxed-WTA) + per-pixel Laplace scale (aleatoric uncertainty).
+    prob_k=5,                 # number of hypotheses
+    prob_eps=0.05,            # relaxed-WTA weight on non-winner heads (keeps them alive)
+    prob_w_nll=0.2,           # weight on Laplace NLL (uncertainty calibration)
+    prob_coarse=True,         # band-limit heads (avg-pool to prob_head res then upsample)
+    prob_head_h=16, prob_head_w=32,   # coarse head resolution (enforces smoothness)
 
     # --- ray sampling ---
     n_rays=2048,              # rays supervised per sample per step

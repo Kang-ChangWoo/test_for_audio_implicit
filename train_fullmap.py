@@ -20,7 +20,7 @@ import torch
 from types import SimpleNamespace
 
 from config import get_cfg
-from data import make_loader, apply_audio_mode, shuffle_audio_batch
+from data import make_loader, apply_audio_mode, shuffle_audio_batch, swap_audio_lr
 from ray_features import RayBank
 from model_fullmap import FullMapNet
 from metrics import MetricBank, cos_lat, gaussian_blur_erp
@@ -147,6 +147,10 @@ def main():
                 rsup = masked_mae(dc, rtgt, mask); tvl = tv(dc)
                 loss = loss + cfg.w_res_sup * rsup + cfg.w_tv * tvl
                 logs["rsup"] = float(rsup.detach()); logs["tv"] = float(tvl.detach())
+            if cfg.w_swap_eq > 0:                                            # tip8: swap-equivariance
+                out_sw = model(swap_audio_lr(spec), extra.get("coarse_feat"), extra.get("sh_basis"))
+                eq = masked_mae(out_sw["D"], torch.flip(out["D"].detach(), dims=[-1]), mask)
+                loss = loss + cfg.w_swap_eq * eq; logs["eq"] = float(eq.detach())
             opt.zero_grad(); loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), 1.0)
             opt.step(); sched.step()

@@ -1,0 +1,32 @@
+/root/storage/implementation/shared_audio/test_for_audio_implicit/train_fullmap.py:72: UserWarning: The given NumPy array is not writable, and PyTorch does not support non-writable tensors. This means writing to this tensor will result in undefined behavior. You may want to copy the array to protect its data or make it writable before converting it to a tensor. This type of warning will be suppressed for the rest of this program. (Triggered internally at /pytorch/torch/csrc/utils/tensor_numpy.cpp:203.)
+  t = torch.from_numpy(np.ascontiguousarray(a)).float()
+[cfg] correction=none {'dataset_dir': '/root/storage/matterport3d_0303renew', 'cache_dir': 'cache_rir', 'img_h': 64, 'img_w': 128, 'max_depth': 10.0, 'sample_rate': 48000, 'in_ch': 5, 'model': 'raymlp', 'width': 48, 'embed_dim': 128, 'dim': 192, 'audio_dim': 256, 'use_xyz': True, 'use_fourier_pe': True, 'fourier_bands': 6, 'use_sh_pe': False, 'sh_order': 4, 'use_mic_pe': False, 'head_r': 0.0875, 'n_heads': 4, 'n_cross': 2, 'n_self': 2, 'ray_mlp_skip': False, 'ray_film': False, 'prog_pe': False, 'sector_sample': False, 'use_depth_bins': False, 'n_bins': 64, 'hybrid_sh_order': 3, 'w_coarse': 0.5, 'w_res': 0.02, 'arch': 'fullmap', 'ngf': 64, 'unet_downs': 6, 'correction': 'none', 'coarse_h': 16, 'coarse_w': 32, 'corr_sh_order': 3, 'w_sh_aux': 1.0, 'init_decoder': '', 'freeze_decoder': False, 'res_scale': 0.3, 'w_res_sup': 1.0, 'w_tv': 0.01, 'chan_norm': True, 'w_swap_eq': 0.0, 'n_rays': 2048, 'eval_chunk': 4096, 'epochs': 25, 'batch_size': 64, 'lr': 0.002, 'weight_decay': 0.0001, 'num_workers': 6, 'seed': 0, 'device': 'cuda', 'out_dir': 'out', 'run_name': 'A13_ipd5_norm_s0', 'audio_mode': 'stereo', 'shuffle_audio': False, 'mask_farfield': False}
+[model] params=5.31M
+[train] 28800 (cache:cache_rir)
+[val] 3543 (cache:cache_rir)
+[ep 00]  27.7s  {'mae': 0.09570407917102178}  val_MAE=1.4830m
+[ep 01]  27.2s  {'mae': 0.07830694870816336}  val_MAE=1.1085m
+[ep 02]  27.4s  {'mae': 0.07686300943295162}  val_MAE=1.2414m
+[ep 03]  27.4s  {'mae': 0.07556339335110453}  val_MAE=1.1002m
+[ep 04]  27.4s  {'mae': 0.07429441892438465}  val_MAE=1.1109m
+[ep 05]  27.5s  {'mae': 0.07290155021680726}  val_MAE=1.0710m
+[ep 06]  27.6s  {'mae': 0.07197446951435672}  val_MAE=1.1023m
+[ep 07]  27.6s  {'mae': 0.07084958299994469}  val_MAE=1.0620m
+[ep 08]  27.6s  {'mae': 0.07007386184400982}  val_MAE=1.0216m
+[ep 09]  27.6s  {'mae': 0.06879801298181216}  val_MAE=1.0296m
+[ep 10]  27.6s  {'mae': 0.06761513123909632}  val_MAE=1.0684m
+[ep 11]  27.6s  {'mae': 0.06634524945583609}  val_MAE=1.0322m
+[ep 12]  27.7s  {'mae': 0.06511315288643042}  val_MAE=1.0241m
+[ep 13]  27.7s  {'mae': 0.06345025003784233}  val_MAE=1.0306m
+[ep 14]  27.6s  {'mae': 0.061822647949059804}  val_MAE=1.0294m
+[ep 15]  27.5s  {'mae': 0.06005899527006679}  val_MAE=1.0317m
+[ep 16]  27.6s  {'mae': 0.058243614128894276}  val_MAE=1.0360m
+[ep 17]  27.6s  {'mae': 0.056486765791972475}  val_MAE=1.0440m
+[ep 18]  27.6s  {'mae': 0.05480236516230636}  val_MAE=1.0431m
+[ep 19]  27.6s  {'mae': 0.05349601078364584}  val_MAE=1.0510m
+[ep 20]  27.5s  {'mae': 0.052254068379600845}  val_MAE=1.0431m
+[ep 21]  27.5s  {'mae': 0.051250242408778936}  val_MAE=1.0540m
+[ep 22]  27.6s  {'mae': 0.0506448231306341}  val_MAE=1.0627m
+[ep 23]  27.6s  {'mae': 0.05014796397752232}  val_MAE=1.0718m
+[ep 24]  27.5s  {'mae': 0.05004932328230805}  val_MAE=1.0738m
+[done] best val MAE = 1.0216 m -> out/A13_ipd5_norm_s0
